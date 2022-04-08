@@ -41,7 +41,7 @@ class SatoTate:
         pi = len(primes)
         if len(self._normalized_aplist) >= pi:
             return self._normalized_aplist[0:pi]
-        print(len(self._normalized_aplist), " <  ", pi)
+        #print(len(self._normalized_aplist), " <  ", pi)
         anlist = self.anlist(n)
         v = [float(anlist[p])/float(2 * sqrt(p)) for p in primes]
         self._normalized_aplist = v
