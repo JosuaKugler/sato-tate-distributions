@@ -174,4 +174,4 @@ def plot_theta_interval(p, clr=(0,0,0), *args, **kwds):
 
 def plot_theta(p, clr=(0,0,0), *args, **kwds):
     v = compute_theta(p, *args, **kwds)
-    return point(v,rgbcolor=clr, ymin=0, ymax=2) + line(v, rgbcolor=clr) + liney(1.2,0,p)
+    return point(v,rgbcolor=clr, ymin=0, ymax=2) + line(v, rgbcolor=clr) + liney(1,0,p)

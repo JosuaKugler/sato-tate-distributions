@@ -3,10 +3,9 @@
 A lot of the ideas are from https://wstein.org/talks/20071016-convergence/talk.pdf
 and some of the code is taken from https://wstein.org/talks/20071016-convergence/uw/sato_tate-talk.pdf
 
-As for the horizontal case, let s(x) be the area under the arc of the semicircle and f_c(x) the area of the histogram bars for primes up to c.
-Then define 
-<img src="https://render.githubusercontent.com/render/math?math=\Delta(C) = \sqrt{\int_{-1}^1 (s(x) - f_c(x))^2 \mathrm{d} x}">, i.e. the L2-norm of difference between our histogram and the convergence rate.
+The aim of this project is to provide numerical evidence for studying the convergence speed of the Sato-Tate-Distribution.
 
-Finally we define <img src="https://render.githubusercontent.com/render/math?math=\theta(C) = -\log_C(\Delta(C)^2)">.
+In horizontal_st.ipynb, we plot the convergence speed for elliptic curves with different rank and see that the convergence speed strongly depends on the rank.
 
-In horizontal_st.ipynb, we plot theta(C) for elliptic curves with different rank and see that theta depends on the rank.
+In vertical_st.ipynb, we plot the convergence speed of the vertical Sato-Tate-Distribution as a function of the prime.
+We conjecture that the squared L2-norm of the difference of the distribution and the semicircle is in O(p)
