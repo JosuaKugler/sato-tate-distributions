@@ -185,7 +185,7 @@ class SatoTate:
         #return frequency_histogram(d, num_bins, total_number_of_points) + semicircle
         v = self.normalized_aplist(Cmax)
         print("num_bins:", num_bins)
-        n, bins, patches = plt.hist(v, num_bins)
+        n, bins, patches = plt.hist(v, num_bins, density=True)
         angle = np.linspace(0, np.pi, 150)
         radius = 1
         x = radius * np.cos(angle) 
