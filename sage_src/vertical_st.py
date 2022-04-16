@@ -1,3 +1,12 @@
+#Functions:
+#-fast_aplist(p)
+#   compute a list of the a_p value of all elliptic curves over F_p
+#-sorted_aplist(p)
+#   sort ap_list(p)
+#-histogram(p)
+#   plot histogram of fast_aplist(p), divided in num_bins bins
+#-Xab, 
+
 import matplotlib.pyplot as plt
 import numpy as np
 from math import asin, log, sqrt
@@ -23,10 +32,17 @@ def fast_aplist(p):
             ap_list = np.append(ap_list, -ret_list)
     return ap_list
 
+def sorted_aplist(p):
+    """
+    sort ap_list(p)
+    """
+    v = fast_aplist(p)
+    v.sort()
+    return v
+
 def histogram(num_bins, p):
     """
-    plot histogram of v, divided in num_bins bins.
-    p is only given to be added to title of histogram
+    plot histogram of fast_aplist(p), divided in num_bins bins
     """
     v = fast_aplist(p)
     n, bins, patches = plt.hist(v, num_bins, density=True)
@@ -43,18 +59,21 @@ def histogram(num_bins, p):
     plt.show()
 
 def Xab(a,b):
+    """
+    return a function X(T)
+    where X(T) is the integral 
+    """
     bb = (asin(b)/2.0 + b*sqrt(1.0-b**2.0)/2.0)
     aa = (asin(a)/2.0 + a*sqrt(1.0-a**2.0)/2.0)
     def X(T):
         return (asin(T)/2 + T*sqrt(1-T**2)/2 - aa)/(bb - aa)
     return X
 
-def sorted_aplist(p):
-    v = fast_aplist(p)
-    v.sort()
-    return v
-
 def Ypab(p, a=-1, b=1):
+    """
+    return a function Y(T)
+    where Y(T) is 
+    """
     v = sorted_aplist(p)
     denom = bisect.bisect_right(v, float(b)) - bisect.bisect_left(v, float(a))
     try:
