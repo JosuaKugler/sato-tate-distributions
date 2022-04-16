@@ -6,6 +6,7 @@ from sage.plot.line import line
 from sage.plot.point import point
 from sage.calculus.integration import numerical_integral as integral_numerical
 from sage.libs.pari import pari
+from sage.rings.fast_arith import prime_range
 
 def fast_aplist(p):
     """
@@ -22,14 +23,6 @@ def fast_aplist(p):
             ap_list = np.append(ap_list, -ret_list)
     return ap_list
 
-def my_prime_range(n):
-    """ Returns  a list of primes < n """
-    sieve = [True] * n
-    for i in range(3,int(n**0.5)+1,2):
-        if sieve[i]:
-            sieve[i*i::2*i]=[False]*((n-i*i-1)//(2*i)+1)
-    return [2] + [i for i in range(3,n,2) if sieve[i]]
-
 def histogram(num_bins, p):
     """
     plot histogram of v, divided in num_bins bins.
@@ -45,9 +38,7 @@ def histogram(num_bins, p):
     plt.xlabel('$a_p/2\\sqrt{p}$')
     plt.ylabel('Frequency')
     plt.title('Vertical Sato-Tate-Distribution for p = {}'.format(p))
-    #plt.text(60, .025, r'$\mu=100,\ \sigma=15$')
     plt.xlim(-1,1)
-    #plt.ylim(0, 1)
     plt.grid(True)
     plt.show()
 
@@ -122,7 +113,7 @@ def Delta(p, a, b, max_points=300, verb=False, norm='l2'):
     return val, err
 
 def plot_Delta(pmax, step_size=10, max_points=100, a=-1, b=1):
-    v = [(p,Delta(p, a, b, max_points=max_points)[0]) for p in my_prime_range(pmax)[4:][::step_size]] #skip 2,3,5,7 and then take only every step_size-th prime
+    v = [(p,Delta(p, a, b, max_points=max_points)[0]) for p in prime_range(pmax)[4:][::step_size]] #skip 2,3,5,7 and then take only every step_size-th prime
     return line(v,rgbcolor=(0,0,0), ymin=0, ymax=0.1)
 
 
@@ -149,7 +140,7 @@ def compute_theta(p, step_size=None, a=-1, b=1, max_points=300, verb=False):
         return z[0]
 
     #calls theta (= log etc. angewandt auf Delta)
-    return [(x,f(x)) for x in my_prime_range(p)[25:][::step_size]]#skip the first 25 primes and then take only every step_size-th prime
+    return [(x,f(x)) for x in prime_range(p)[25:][::step_size]]#skip the first 25 primes and then take only every step_size-th prime
 
 def compute_theta_interval(p, step_size=None, a=-1, b=1, max_points=300, verb=False):
     if verb:
@@ -158,7 +149,7 @@ def compute_theta_interval(p, step_size=None, a=-1, b=1, max_points=300, verb=Fa
     if not step_size:
         step_size = max(1, int(p/(20 * log(p)))) # grows with pi(p)
     vmin = []; vmax = []
-    for C in my_prime_range(p)[25:][::step_size]:#skip the first 25 primes and then take only every step_size-th prime
+    for C in prime_range(p)[25:][::step_size]:#skip the first 25 primes and then take only every step_size-th prime
         zmin,zmax = theta_interval(C, a, b, max_points=max_points)
         vmin.append((C, zmin))
         vmax.append((C, zmax))
@@ -170,7 +161,8 @@ def plot_theta_interval(p, clr=(0,0,0), *args, **kwds):
     vmin, vmax = compute_theta_interval(p, *args, **kwds)
     v = compute_theta(p, *args, **kwds)
     grey = (0.7,0.7,0.7)
-    return line(vmin,rgbcolor=grey, ymin=0,ymax=1.5) + line(vmax,rgbcolor=grey) + point(v,rgbcolor=clr) + line(v,rgbcolor=clr) + liney(1,0, p)
+    p = line(vmin,rgbcolor=grey, ymin=0,ymax=1.5) + line(vmax,rgbcolor=grey) + point(v,rgbcolor=clr) + line(v,rgbcolor=clr) + liney(1,0, p)
+    p.axes_labels(['$p$', '$\\theta$'])
 
 def plot_theta(p, clr=(0,0,0), *args, **kwds):
     v = compute_theta(p, *args, **kwds)

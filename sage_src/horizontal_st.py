@@ -1,3 +1,5 @@
+from cProfile import label
+from distutils.log import error
 from math import asin, log, sqrt
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,6 +8,7 @@ from sage.plot.line import line
 from sage.plot.plot import plot
 from sage.plot.point import point
 from sage.calculus.integration import numerical_integral as integral_numerical
+from sage.rings.fast_arith import prime_range
 
 def line1(xmin,xmax):
     return line([(xmin,1),(xmax,1)], rgbcolor=(1,0,0))
@@ -16,14 +19,6 @@ def Xab(a,b):
     def X(T):
         return (asin(T)/2.0 + T*sqrt(1.0-T**2.0)/2.0 - aa)/(bb - aa)
     return X
-
-def my_prime_range(n):
-    """ Returns  a list of primes < n """
-    sieve = [True] * n
-    for i in range(3,int(n**0.5)+1,2):
-        if sieve[i]:
-            sieve[i*i::2*i]=[False]*((n-i*i-1)//(2*i)+1)
-    return [2] + [i for i in range(3,n,2) if sieve[i]]
 
 class SatoTate:
     def __init__(self, E):
@@ -37,7 +32,7 @@ class SatoTate:
         return self._E.anlist(n)
 
     def normalized_aplist_with_caching(self, n):
-        primes = my_prime_range(n)
+        primes = prime_range(n)
         pi = len(primes)
         if len(self._normalized_aplist) >= pi:
             return self._normalized_aplist[0:pi]
@@ -48,7 +43,7 @@ class SatoTate:
         return v.copy()
     
     def normalized_aplist(self, n):
-        primes = my_prime_range(n)
+        primes = prime_range(n)
         anlist = self.anlist(n)
         #two = float(2)
         #v = [float(anlist[p])/(two*sqrt(p)) for p in primes]
@@ -163,17 +158,26 @@ class SatoTate:
                 print(C, zmin, zmax)
         return vmin, vmax
     
-    def plot_theta_interval(self, Cmax, clr=(0,0,0), *args, **kwds):
+    def plot_theta(self, Cmax, clr=(0,0,0), show_error_bound=True, *args, **kwds):
         self.sorted_aplist(Cmax)
-        vmin, vmax = self.compute_theta_interval(Cmax, *args, **kwds)
+        if show_error_bound:
+            vmin, vmax = self.compute_theta_interval(Cmax, *args, **kwds)
         v = self.compute_theta(Cmax, *args, **kwds)
         grey = (0.7,0.7,0.7)
-        return line(vmin,rgbcolor=grey, ymin=0,ymax=1.2) + line(vmax,rgbcolor=grey) + point(v,rgbcolor=clr) + line(v,rgbcolor=clr) + line1(0, Cmax)
-    
-    def plot_theta(self, Cmax, clr=(0,0,0), *args, **kwds):
-        self.sorted_aplist(Cmax)
-        v = self.compute_theta(Cmax, *args, **kwds)
-        return point(v,rgbcolor=clr, ymin=0, ymax=1.2) + line(v, rgbcolor=clr) + line1(0,Cmax)
+        theta_line = line(v,rgbcolor=clr, ymin=0,ymax=1.2, legend_label='$\\theta(C)$') 
+        theta_points = point(v,rgbcolor=clr)
+        if show_error_bound:
+            error_bound = line(vmin,rgbcolor=grey, legend_label='numerical integration error bound') + line(vmax,rgbcolor=grey)
+        reference_line = line([(0,1),(Cmax,1)], rgbcolor=(1,0,0), legend_label='y=1.0')
+        
+        p = theta_line + theta_points + reference_line
+        if show_error_bound:
+            p = p + error_bound
+
+        p.axes_labels(['$C$ ', '$\\theta$'])
+        p.legend(True)
+        p.set_legend_options()
+        return p
         
     def histogram(self, Cmax, num_bins):
         '''
