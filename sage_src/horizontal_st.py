@@ -9,14 +9,59 @@ from sage.rings.fast_arith import prime_range
 from utils import Xab
 
 class SatoTate:
+    """
+    Functions:
+    -anlist
+        return anlist of self.E
+    -normalized_aplist_with_caching
+        normalize aplist either from cache oder from self.anlist
+        can be way faster than normalized_aplist, for 10^6: 4.1s instead of 60s
+    -normalized_aplist
+        normalize aplist from self.anlist
+    -sorted_aplist
+        sort normalized aplist
+    -YCab
+        return a function Y(T)
+        where Y(T) is the area under the 'histogram' from a to T\
+    -Delta
+        compute Delta_a^b(C)
+        where max_points is the number of points used in numerical integration
+    -plot_Delta
+        plot Delta_a^b(x) from 0 to Cmax (use plot_points plot points)
+    -theta
+        compute theta from Delta
+    -theta_error_bound
+        compute error bound from numerical integration
+    -theta_range
+        compute list of (x, theta(x)) pairs where x <= Cmax
+        use in total plot_points different equally distributed values for x
+        where max_points is the number of points used in numerical integration
+    -theta_error_bound_range
+        compute lists of (x, theta_max(x)) or (x, theta_min(x)) pairs where x <= Cmax
+        use in total plot_points different equally distributed values for x
+        where max_points is the number of points used in numerical integration
+        and theta_max/theta_min are upper/lower error bounds for the result of the numerical integration
+    -plot-theta
+        plot theta(x) for x from 0 to Cmax
+        if show_error_bound is True the upper and lower error_bound is shown
+    -histogram
+        plot histogram of normalized_aplist(Cmax), divided in num_bins bins
+    """
     def __init__(self, E):
         self._E = E
         self._normalized_aplist = []
 
     def anlist(self, n):
+        """
+        return anlist of self.E
+        """
         return self._E.anlist(n)
 
     def normalized_aplist_with_caching(self, n):
+        """
+        normalize aplist either from cache oder from self.anlist
+        can be way faster than normalized_aplist, for 10^6: 4.1s instead of 60s
+        """
         primes = prime_range(n)
         pi = len(primes)
         if len(self._normalized_aplist) >= pi:
@@ -27,17 +72,26 @@ class SatoTate:
         return v.copy()
     
     def normalized_aplist(self, n):
+        """
+        normalize aplist from self.anlist
+        """
         anlist = self.anlist(n)
         v = [float(anlist[p])/float(2 * sqrt(p)) for p in prime_range(n)]
         return v
 
     def sorted_aplist(self, n):
-        #way faster, for 10^6: 4.1s instead of 60s
+        """
+        sort normalized aplist
+        """
         v = self.normalized_aplist_with_caching(n)
         v.sort()
         return v
             
     def YCab(self, Cmax, a=-1, b=1):
+        """
+        return a function Y(T)
+        where Y(T) is the area under the 'histogram' from a to T
+        """
         v = self.sorted_aplist(Cmax)
         
         denom = bisect.bisect_right(v, float(b)) - bisect.bisect_left(v, float(a))
@@ -56,13 +110,10 @@ class SatoTate:
             return n * normalize
         return Y
     
-    
     def Delta(self, C, a, b, max_points=300):
         """
-        Delta_{a}^{b} function:
-        INPUT: C - cutoff
-        a,b - evaluate over the interval (a,b)
-        max_points - number of points used in numerical integral
+        compute Delta_a^b(C)
+        where max_points is the number of points used in numerical integration
         """
         key = (C,a,b,max_points)
         try:
@@ -82,20 +133,34 @@ class SatoTate:
         return val, err
     
     def plot_Delta(self, Cmax, plot_points=400, max_points=100, a=-1, b=1):
+        """
+        plot Delta_a^b(x) from 0 to Cmax (use plot_points plot points)
+        """
         v = [(x,self.Delta(x, a, b, max_points=max_points)[0]) for x in range(0, Cmax, int(Cmax/plot_points))]
         p = line(v,rgbcolor=(0,0,0), ymin=0, ymax=0.1)
         p.axes_labels(['$C$', '$\\Delta$'])
         return p
     
     def theta(self, C, a=-1, b=1, max_points=300):
+        """
+        compute theta from Delta
+        """
         val, err = self.Delta(C, a, b, max_points=max_points)
         return -log(val)/log(C), val, err
     
-    def theta_interval(self, C, a=-1, b=1, max_points=300):
+    def theta_error_bound(self, C, a=-1, b=1, max_points=300):
+        """
+        compute error bound from numerical integration
+        """
         val, err = self.Delta(C, a, b, max_points=max_points)
         return -log(val-abs(err))/log(C), -log(val+abs(err))/log(C)
     
-    def compute_theta(self, Cmax, plot_points=30, a=-1, b=1, max_points=300, verbose=False):
+    def theta_range(self, Cmax, plot_points=30, a=-1, b=1, max_points=300, verbose=False):
+        """
+        compute list of (x, theta(x)) pairs where x <= Cmax
+        use in total plot_points different equally distributed values for x
+        where max_points is the number of points used in numerical integration
+        """
         a,b = (float(a), float(b))
         
         def f(C):
@@ -106,11 +171,17 @@ class SatoTate:
         #calls theta (= log etc. angewandt auf Delta)
         return [(x,f(x)) for x in range(100, Cmax, int(Cmax/plot_points))]
     
-    def compute_theta_interval(self, Cmax, plot_points=30, a=-1, b=1, max_points=300, verbose=False):
+    def theta_error_bound_range(self, Cmax, plot_points=30, a=-1, b=1, max_points=300, verbose=False):
+        """
+        compute lists of (x, theta_max(x)) or (x, theta_min(x)) pairs where x <= Cmax
+        use in total plot_points different equally distributed values for x
+        where max_points is the number of points used in numerical integration
+        and theta_max/theta_min are upper/lower error bounds for the result of the numerical integration
+        """
         a,b = (float(a), float(b))
         vmin = []; vmax = []
         for C in range(100, Cmax, int(Cmax/plot_points)):
-            zmin,zmax = self.theta_interval(C, a, b, max_points=max_points)
+            zmin,zmax = self.theta_error_bound(C, a, b, max_points=max_points)
             vmin.append((C, zmin))
             vmax.append((C, zmax))
             if verbose: 
@@ -118,10 +189,14 @@ class SatoTate:
         return vmin, vmax
     
     def plot_theta(self, Cmax, clr=(0,0,0), show_error_bound=True, *args, **kwds):
+        """
+        plot theta(x) for x from 0 to Cmax
+        if show_error_bound is True the upper and lower error_bound is shown
+        """
         self.sorted_aplist(Cmax)
         if show_error_bound:
-            vmin, vmax = self.compute_theta_interval(Cmax, *args, **kwds)
-        v = self.compute_theta(Cmax, *args, **kwds)
+            vmin, vmax = self.theta_error_bound_range(Cmax, *args, **kwds)
+        v = self.theta_range(Cmax, *args, **kwds)
         grey = (0.7,0.7,0.7)
         theta_line = line(v,rgbcolor=clr, ymin=0,ymax=1.2, legend_label='$\\theta(C)$') 
         theta_points = point(v,rgbcolor=clr)
@@ -140,7 +215,7 @@ class SatoTate:
         
     def histogram(self, Cmax, num_bins):
         '''
-        modified with matplotlib plotting
+        plot histogram of normalized_aplist(Cmax), divided in num_bins bins
         '''
         v = self.normalized_aplist(Cmax)
         print("num_bins:", num_bins)
