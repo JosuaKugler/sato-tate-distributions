@@ -5,17 +5,24 @@
 #   sort ap_list(p)
 #-histogram(p)
 #   plot histogram of fast_aplist(p), divided in num_bins bins
-#-Xab, 
+#-Xab (from python_utils)
+#   return a function X(T)
+#    where X(T) is the area under the arc of the semicircle from a to T
+#- Ypab
+#   return a function Y(T)
+#    where Y(T) is the area under the 'histogram' from a to T
+#- 
 
 import matplotlib.pyplot as plt
 import numpy as np
-from math import asin, log, sqrt
+from math import log, sqrt
 import bisect
 from sage.plot.line import line
 from sage.plot.point import point
 from sage.calculus.integration import numerical_integral as integral_numerical
 from sage.libs.pari import pari
 from sage.rings.fast_arith import prime_range
+from python_utils import Xab
 
 def fast_aplist(p):
     """
@@ -58,21 +65,10 @@ def histogram(num_bins, p):
     plt.grid(True)
     plt.show()
 
-def Xab(a,b):
-    """
-    return a function X(T)
-    where X(T) is the integral 
-    """
-    bb = (asin(b)/2.0 + b*sqrt(1.0-b**2.0)/2.0)
-    aa = (asin(a)/2.0 + a*sqrt(1.0-a**2.0)/2.0)
-    def X(T):
-        return (asin(T)/2 + T*sqrt(1-T**2)/2 - aa)/(bb - aa)
-    return X
-
 def Ypab(p, a=-1, b=1):
     """
     return a function Y(T)
-    where Y(T) is 
+    where Y(T) is the area under the 'histogram' from a to T
     """
     v = sorted_aplist(p)
     denom = bisect.bisect_right(v, float(b)) - bisect.bisect_left(v, float(a))
@@ -99,10 +95,10 @@ def Delta(p, a, b, max_points=300, verb=False, norm='l2'):
     INPUT: C - cutoff
     a,b - evaluate over the interval (a,b)
     max_points - number of points used in numerical integral
+    norm - use either 'l2' or 'l1'-norm
     """
     global _delta
     key = (p,a,b,max_points)
-    #do not cache while changing the function!
     try:
         return _delta[key]
     except NameError:

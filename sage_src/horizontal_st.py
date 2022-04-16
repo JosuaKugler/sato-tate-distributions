@@ -1,32 +1,17 @@
-from cProfile import label
-from distutils.log import error
-from math import asin, log, sqrt
+from math import log, sqrt
 import matplotlib.pyplot as plt
 import numpy as np
 import bisect
 from sage.plot.line import line
-from sage.plot.plot import plot
 from sage.plot.point import point
 from sage.calculus.integration import numerical_integral as integral_numerical
 from sage.rings.fast_arith import prime_range
-
-def line1(xmin,xmax):
-    return line([(xmin,1),(xmax,1)], rgbcolor=(1,0,0))
-
-def Xab(a,b):
-    bb = (asin(b)/2.0 + b*sqrt(1.0-b**2.0)/2.0)
-    aa = (asin(a)/2.0 + a*sqrt(1.0-a**2.0)/2.0)
-    def X(T):
-        return (asin(T)/2.0 + T*sqrt(1.0-T**2.0)/2.0 - aa)/(bb - aa)
-    return X
+from python_utils import Xab
 
 class SatoTate:
     def __init__(self, E):
         self._E = E
         self._normalized_aplist = []
-
-    def __repr__(self):
-        return "Sato-Tate data for ..."
 
     def anlist(self, n):
         return self._E.anlist(n)
@@ -171,6 +156,3 @@ class SatoTate:
         plt.xlim(-1,1)
         plt.grid(True)
         plt.show()
-        
-    def x_times_Delta(self, x):
-        return x*self.Delta(x, -1,1, max_points=500)[0]
