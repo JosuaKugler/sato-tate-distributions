@@ -6,7 +6,7 @@ from sage.plot.line import line
 from sage.plot.point import point
 from sage.calculus.integration import numerical_integral as integral_numerical
 from sage.rings.fast_arith import prime_range
-from python_utils import Xab
+from utils import Xab
 
 class SatoTate:
     def __init__(self, E):

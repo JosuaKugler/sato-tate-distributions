@@ -1,4 +1,5 @@
 #Functions:
+#
 #-fast_aplist(p)
 #   compute a list of the a_p value of all elliptic curves over F_p
 #-sorted_aplist(p)
@@ -8,10 +9,33 @@
 #-Xab (from python_utils)
 #   return a function X(T)
 #    where X(T) is the area under the arc of the semicircle from a to T
-#- Ypab
+#-Ypab
 #   return a function Y(T)
-#    where Y(T) is the area under the 'histogram' from a to T
-#- 
+#   where Y(T) is the area under the 'histogram' from a to T
+#-Delta
+#compute Delta_a^b(p)
+#   where max_points is the number of points used in numerical integration
+#   and norm is either 'l2' or 'l1'
+#-plot_Delta
+#   plot Delta_a^b(p) from 0 to pmax (use every stepsize-th prime)
+#-theta
+#   compute theta from Delta
+#-theta_error_bound
+#   compute error bound from numerical integration
+#-theta_range
+#   compute list of (x, theta(x)) pairs where x is a prime <= p
+#   use every stepsize-th prime for x
+#   where max_points is the number of points used in numerical integration
+#   if step_size is not given the function estimates a proper size depending on p
+#-theta_error_bound_range
+#   compute lists of (x, theta_max(x)) or (x, theta_min(x)) pairs where x is a prime <= p
+#   use every stepsize-th prime for x
+#   where max_points is the number of points used in numerical integration
+#   and theta_max/theta_min are upper/lower error bounds for the result of the numerical integration
+#   if step_size is not given the function estimates a proper size depending on p
+#-plot_theta
+#plot theta(x) for x prime from 0 to p
+#   if show_error_bound is True the upper and lower error_bound is shown
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,7 +46,7 @@ from sage.plot.point import point
 from sage.calculus.integration import numerical_integral as integral_numerical
 from sage.libs.pari import pari
 from sage.rings.fast_arith import prime_range
-from python_utils import Xab
+from utils import Xab
 
 def fast_aplist(p):
     """
@@ -89,13 +113,11 @@ def Ypab(p, a=-1, b=1):
 
 global _delta
 
-def Delta(p, a, b, max_points=300, verb=False, norm='l2'):
+def Delta(p, a, b, max_points=300, norm='l2'):
     """
-    Delta_{a}**{b} function:
-    INPUT: C - cutoff
-    a,b - evaluate over the interval (a,b)
-    max_points - number of points used in numerical integral
-    norm - use either 'l2' or 'l1'-norm
+    compute Delta_a^b(p)
+    where max_points is the number of points used in numerical integration
+    and norm is either 'l2' or 'l1'
     """
     global _delta
     key = (p,a,b,max_points)
@@ -116,64 +138,75 @@ def Delta(p, a, b, max_points=300, verb=False, norm='l2'):
     val, err = integral_numerical(h, a, b, max_points=max_points, algorithm='qag', rule=1, eps_abs=1e-10, eps_rel=1e-10)
     
     _delta[key] = (val, err)
-    if verb:
-        print("p: ", p, " val: ", val)
-    if val < 0:
-        val = -val
-        print(val)
     return val, err
 
 def plot_Delta(pmax, step_size=10, max_points=100, a=-1, b=1):
+    """
+    plot Delta_a^b(p) from 0 to pmax (use every stepsize-th prime)
+    """
     v = [(p,Delta(p, a, b, max_points=max_points)[0]) for p in prime_range(pmax)[4:][::step_size]] #skip 2,3,5,7 and then take only every step_size-th prime
     p = line(v,rgbcolor=(0,0,0), ymin=0, ymax=0.1)
     p.axes_labels(['$p$', '$\\Delta$'])
     return p
 
-
-def theta(p, a=-1, b=1, max_points=300, verb=False):
-    val, err = Delta(p, a, b, max_points=max_points, verb=verb)
-    if verb: print(val, err)
+def theta(p, a=-1, b=1, max_points=300):
+    """
+    compute theta from Delta
+    """
+    val, err = Delta(p, a, b, max_points=max_points)
     return -log(val)/log(p), val, err
 
-def theta_interval(p, a=-1, b=1, max_points=300):
+def theta_error_bound(p, a=-1, b=1, max_points=300):
+    """
+    compute error bound from numerical integration
+    """
     val, err = Delta(p, a, b, max_points=max_points)
     return -log(val-abs(err))/log(p), -log(val+abs(err))/log(p)
 
-def compute_theta(p, step_size=None, a=-1, b=1, max_points=300, verb=False):
-    if verb:
-        print('verbose')
+def theta_range(p, step_size=None, a=-1, b=1, max_points=300):
+    """
+    compute list of (x, theta(x)) pairs where x is a prime <= p
+    use every stepsize-th prime for x
+    where max_points is the number of points used in numerical integration
+    if step_size is not given the function estimates a proper size depending on p
+    """
     a,b = (float(a), float(b))
     if not step_size:
         step_size = max(1, int(p/(20 * log(p)))) # grows with pi(p)
 
     def f(p):
-        if verb: print(p)
-        z = theta(p, a, b, max_points=max_points, verb=verb)
-        if verb: print(z)
+        z = theta(p, a, b, max_points=max_points)
         return z[0]
 
     #calls theta (= log etc. angewandt auf Delta)
     return [(x,f(x)) for x in prime_range(p)[25:][::step_size]]#skip the first 25 primes and then take only every step_size-th prime
 
-def compute_theta_interval(p, step_size=None, a=-1, b=1, max_points=300, verb=False):
-    if verb:
-        print('verbose')
+def theta_error_bound_range(p, step_size=None, a=-1, b=1, max_points=300):
+    """
+    compute lists of (x, theta_max(x)) or (x, theta_min(x)) pairs where x is a prime <= p
+    use every stepsize-th prime for x
+    where max_points is the number of points used in numerical integration
+    and theta_max/theta_min are upper/lower error bounds for the result of the numerical integration
+    if step_size is not given the function estimates a proper size depending on p
+    """
     a,b = (float(a), float(b))
     if not step_size:
         step_size = max(1, int(p/(20 * log(p)))) # grows with pi(p)
     vmin = []; vmax = []
     for C in prime_range(p)[25:][::step_size]:#skip the first 25 primes and then take only every step_size-th prime
-        zmin,zmax = theta_interval(C, a, b, max_points=max_points)
+        zmin,zmax = theta_error_bound(C, a, b, max_points=max_points)
         vmin.append((C, zmin))
         vmax.append((C, zmax))
-        if verb: 
-            print(C, zmin, zmax)
     return vmin, vmax
 
 def plot_theta(p, clr=(0,0,0), show_error_bound=True, *args, **kwds):
+    """
+    plot theta(x) for x prime from 0 to p
+    if show_error_bound is True the upper and lower error_bound is shown
+    """
     if show_error_bound:
-        vmin, vmax = compute_theta_interval(p, *args, **kwds)
-    v = compute_theta(p, *args, **kwds)
+        vmin, vmax = theta_error_bound_range(p, *args, **kwds)
+    v = theta_range(p, *args, **kwds)
     grey = (0.7,0.7,0.7)
     theta_line = line(v,rgbcolor=clr,ymin=0,ymax=1.5, legend_label='$\\theta(p)$')
     theta_points = point(v,rgbcolor=clr)
