@@ -42,10 +42,6 @@ def histogram(num_bins, p):
     plt.grid(True)
     plt.show()
 
-
-def liney(y, xmin,xmax):
-    return line([(xmin,y),(xmax,y)], rgbcolor=(1,0,0))
-
 def Xab(a,b):
     bb = (asin(b)/2.0 + b*sqrt(1.0-b**2.0)/2.0)
     aa = (asin(a)/2.0 + a*sqrt(1.0-a**2.0)/2.0)
@@ -114,7 +110,9 @@ def Delta(p, a, b, max_points=300, verb=False, norm='l2'):
 
 def plot_Delta(pmax, step_size=10, max_points=100, a=-1, b=1):
     v = [(p,Delta(p, a, b, max_points=max_points)[0]) for p in prime_range(pmax)[4:][::step_size]] #skip 2,3,5,7 and then take only every step_size-th prime
-    return line(v,rgbcolor=(0,0,0), ymin=0, ymax=0.1)
+    p = line(v,rgbcolor=(0,0,0), ymin=0, ymax=0.1)
+    p.axes_labels(['$p$', '$\\Delta$'])
+    return p
 
 
 def theta(p, a=-1, b=1, max_points=300, verb=False):
@@ -157,13 +155,22 @@ def compute_theta_interval(p, step_size=None, a=-1, b=1, max_points=300, verb=Fa
             print(C, zmin, zmax)
     return vmin, vmax
 
-def plot_theta_interval(p, clr=(0,0,0), *args, **kwds):
-    vmin, vmax = compute_theta_interval(p, *args, **kwds)
+def plot_theta(p, clr=(0,0,0), show_error_bound=True, *args, **kwds):
+    if show_error_bound:
+        vmin, vmax = compute_theta_interval(p, *args, **kwds)
     v = compute_theta(p, *args, **kwds)
     grey = (0.7,0.7,0.7)
-    p = line(vmin,rgbcolor=grey, ymin=0,ymax=1.5) + line(vmax,rgbcolor=grey) + point(v,rgbcolor=clr) + line(v,rgbcolor=clr) + liney(1,0, p)
-    p.axes_labels(['$p$', '$\\theta$'])
+    theta_line = line(v,rgbcolor=clr,ymin=0,ymax=1.5, legend_label='$\\theta(p)$')
+    theta_points = point(v,rgbcolor=clr)
+    if show_error_bound:
+        error_bound = line(vmin,rgbcolor=grey, legend_label='numerical integration error bound') + line(vmax,rgbcolor=grey)
+    reference_line = line([(0,1),(p,1)], rgbcolor=(1,0,0), legend_label='$\\theta=1.0$')
+    
+    p = theta_line + theta_points + reference_line
+    if show_error_bound:
+        p = p + error_bound
 
-def plot_theta(p, clr=(0,0,0), *args, **kwds):
-    v = compute_theta(p, *args, **kwds)
-    return point(v,rgbcolor=clr, ymin=0, ymax=2) + line(v, rgbcolor=clr) + liney(1,0,p)
+    p.axes_labels(['$p$', '$\\theta$'])
+    p.legend(True)
+
+    return p

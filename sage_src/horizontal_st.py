@@ -36,23 +36,17 @@ class SatoTate:
         pi = len(primes)
         if len(self._normalized_aplist) >= pi:
             return self._normalized_aplist[0:pi]
-        #print(len(self._normalized_aplist), " <  ", pi)
         anlist = self.anlist(n)
         v = [float(anlist[p])/float(2 * sqrt(p)) for p in primes]
         self._normalized_aplist = v
         return v.copy()
     
     def normalized_aplist(self, n):
-        primes = prime_range(n)
         anlist = self.anlist(n)
-        #two = float(2)
-        #v = [float(anlist[p])/(two*sqrt(p)) for p in primes]
-        v = [float(anlist[p])/float(2 * sqrt(p)) for p in primes]
-        #self._normalized_aplist = v
+        v = [float(anlist[p])/float(2 * sqrt(p)) for p in prime_range(n)]
         return v
 
     def sorted_aplist(self, n):
-        #v = self.normalized_aplist(n)
         #way faster, for 10^6: 4.1s instead of 60s
         v = self.normalized_aplist_with_caching(n)
         v.sort()
@@ -76,29 +70,7 @@ class SatoTate:
             n = bisect.bisect_right(v, float(T)) - start_pos
             return n * normalize
         return Y
-
-    def xyplot(self, C, a=-1, b=1):
-        """
-        Return the quantile-quantile plot for given a,b, up to C.
-        """
-        Y = self.YCab(C,a=a,b=b)
-        X = Xab(a=a,b=b)
-        pX = plot(X, a, b, rgbcolor=(1,0,0))
-        pY = plot(Y, a, b, rgbcolor=(0,0,1))
-        return pX + pY
     
-    def _qqplot(self, C, a=-1, b=1):#the parametric plot doesn't work like this nowadays
-        """
-        Return the quantile-quantile plot for given a,b, up to C.
-        """
-        Y = self.YCab(C,a=a,b=b)
-        X = Xab(a=a,b=b)
-        print(X)
-        print(Y)
-        #pl = parametric_plot((X, Y), a,b)
-        ll = line([(0,0), (1.1,1.1)], rgbcolor=(1,0,0))
-        #return pl+ll
-        return ll
     
     def Delta(self, C, a, b, max_points=300):
         """
@@ -126,7 +98,9 @@ class SatoTate:
     
     def plot_Delta(self, Cmax, plot_points=400, max_points=100, a=-1, b=1):
         v = [(x,self.Delta(x, a, b, max_points=max_points)[0]) for x in range(0, Cmax, int(Cmax/plot_points))]
-        return line(v,rgbcolor=(0,0,0), ymin=0, ymax=0.1)
+        p = line(v,rgbcolor=(0,0,0), ymin=0, ymax=0.1)
+        p.axes_labels(['$C$', '$\\Delta$'])
+        return p
     
     def theta(self, C, a=-1, b=1, max_points=300):
         val, err = self.Delta(C, a, b, max_points=max_points)
@@ -168,7 +142,7 @@ class SatoTate:
         theta_points = point(v,rgbcolor=clr)
         if show_error_bound:
             error_bound = line(vmin,rgbcolor=grey, legend_label='numerical integration error bound') + line(vmax,rgbcolor=grey)
-        reference_line = line([(0,1),(Cmax,1)], rgbcolor=(1,0,0), legend_label='y=1.0')
+        reference_line = line([(0,1),(Cmax,1)], rgbcolor=(1,0,0), legend_label='$\\theta=1.0$')
         
         p = theta_line + theta_points + reference_line
         if show_error_bound:
@@ -176,17 +150,13 @@ class SatoTate:
 
         p.axes_labels(['$C$ ', '$\\theta$'])
         p.legend(True)
-        p.set_legend_options()
+        
         return p
         
     def histogram(self, Cmax, num_bins):
         '''
         modified with matplotlib plotting
         '''
-        #original code:
-        #v = self.normalized_aplist(Cmax)
-        #d, total_number_of_points = dist(v, num_bins)
-        #return frequency_histogram(d, num_bins, total_number_of_points) + semicircle
         v = self.normalized_aplist(Cmax)
         print("num_bins:", num_bins)
         n, bins, patches = plt.hist(v, num_bins, density=True)
@@ -198,9 +168,7 @@ class SatoTate:
         plt.xlabel('$a_p/\\sqrt{p}$')
         plt.ylabel('Frequency')
         plt.title('Sato-Tate-Distribution for E = {}'.format(self._E))
-        #plt.text(60, .025, r'$\mu=100,\ \sigma=15$')
         plt.xlim(-1,1)
-        #plt.ylim(0, 1)
         plt.grid(True)
         plt.show()
         
