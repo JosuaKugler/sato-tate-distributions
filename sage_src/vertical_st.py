@@ -1,3 +1,8 @@
+#fast computations of sorted, normalized ap values for all elliptic curves over F_p for given p
+#compute 'difference' between distribution for finite p and the 'semicircle" where difference is measured by L2 or L1-norm
+#take log and deal with error interval
+#finally provide nice plotting interfaces for all this
+#
 #Functions:
 #
 #-fast_aplist(p)
