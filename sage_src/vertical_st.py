@@ -11,7 +11,7 @@
 #   sort ap_list(p)
 #-histogram(p)
 #   plot histogram of fast_aplist(p), divided in num_bins bins
-#-Xab (from python_utils)
+#-Xab
 #   return a function X(T)
 #    where X(T) is the area under the arc of the semicircle from a to T
 #-Ypab
@@ -44,14 +44,13 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from math import log, sqrt
+from math import log, sqrt, asin
 import bisect
 from sage.plot.line import line
 from sage.plot.point import point
 from sage.calculus.integration import numerical_integral as integral_numerical
 from sage.libs.pari import pari
 from sage.rings.fast_arith import prime_range
-from utils import Xab
 
 def fast_aplist(p):
     """
@@ -93,6 +92,17 @@ def histogram(num_bins, p):
     plt.xlim(-1,1)
     plt.grid(True)
     plt.show()
+
+def Xab(a,b):
+    """
+    return a function X(T)
+    where X(T) is the area under the arc of the semicircle from a to T
+    """
+    bb = (asin(b)/2.0 + b*sqrt(1.0-b**2.0)/2.0)
+    aa = (asin(a)/2.0 + a*sqrt(1.0-a**2.0)/2.0)
+    def X(T):
+        return (asin(T)/2.0 + T*sqrt(1.0-T**2.0)/2.0 - aa)/(bb - aa)
+    return X
 
 def Ypab(p, a=-1, b=1):
     """
