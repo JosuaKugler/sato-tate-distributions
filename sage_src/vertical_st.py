@@ -262,7 +262,7 @@ def plot_theta(p, clr=(0, 0, 0), show_error_bound=True, *args, **kwds):
     if show_error_bound:
         p = p + error_bound
 
-    p.axes_labels(["$p$", "$\\theta$"])
+    p.axes_labels(["$10^6 \\cdot p$", "$\\theta$"])
     p.legend(True)
 
     return p
