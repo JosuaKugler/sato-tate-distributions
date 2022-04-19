@@ -1,4 +1,4 @@
-"""
+"""horizontal_st.py
 fast computations of sorted, normalized aplist of an elliptic curve
 compute 'difference' between distribution for finite C and the 'semicircle" where difference is measured by L2-norm
 take log and deal with error interval
