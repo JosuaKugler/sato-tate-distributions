@@ -103,7 +103,8 @@ class SatoTate:
         """
         v = self.sorted_aplist(Cmax)
 
-        denom = bisect.bisect_right(v, float(b)) - bisect.bisect_left(v, float(a))
+        denom = bisect.bisect_right(v, float(b)) - \
+            bisect.bisect_left(v, float(a))
         try:
             normalize = float(1) / denom
         except:
