@@ -1,46 +1,46 @@
-# fast computations of sorted, normalized ap values for all elliptic curves over F_p for given p
-# compute 'difference' between distribution for finite p and the 'semicircle" where difference is measured by L2 or L1-norm
-# take log and deal with error interval
-# finally provide nice plotting interfaces for all this
-#
-# Functions:
-#
-# -fast_aplist(p)
-#   compute a list of the a_p value of all elliptic curves over F_p
-# -sorted_aplist(p)
-#   sort ap_list(p)
-# -histogram(p)
-#   plot histogram of fast_aplist(p), divided in num_bins bins
-# -Xab
-#   return a function X(T)
-#    where X(T) is the area under the arc of the semicircle from a to T
-# -Ypab
-#   return a function Y(T)
-#   where Y(T) is the area under the 'histogram' from a to T
-# -Delta
-# compute Delta_a^b(p)
-#   where max_points is the number of points used in numerical integration
-#   and norm is either 'l2' or 'l1'
-# -plot_Delta
-#   plot Delta_a^b(p) from 0 to pmax (use every stepsize-th prime)
-# -theta
-#   compute theta from Delta
-# -theta_error_bound
-#   compute error bound from numerical integration
-# -theta_range
-#   compute list of (x, theta(x)) pairs where x is a prime <= p
-#   use every stepsize-th prime for x
-#   where max_points is the number of points used in numerical integration
-#   if step_size is not given the function estimates a proper size depending on p
-# -theta_error_bound_range
-#   compute lists of (x, theta_max(x)) or (x, theta_min(x)) pairs where x is a prime <= p
-#   use every stepsize-th prime for x
-#   where max_points is the number of points used in numerical integration
-#   and theta_max/theta_min are upper/lower error bounds for the result of the numerical integration
-#   if step_size is not given the function estimates a proper size depending on p
-# -plot_theta
-# plot theta(x) for x prime from 0 to p
-#   if show_error_bound is True the upper and lower error_bound is shown
+"""
+fast computations of sorted, normalized ap values for all elliptic curves over F_p for given p
+compute 'difference' between distribution for finite p and the 'semicircle" where difference is measured by L2 or L1-norm
+take log and deal with error interval
+finally provide nice plotting interfaces for all this
+Functions:
+-fast_aplist(p)
+  compute a list of the a_p value of all elliptic curves over F_p
+-sorted_aplist(p)
+  sort ap_list(p)
+-histogram(p)
+  plot histogram of fast_aplist(p), divided in num_bins bins
+-Xab
+  return a function X(T)
+   where X(T) is the area under the arc of the semicircle from a to T
+-Ypab
+  return a function Y(T)
+  where Y(T) is the area under the 'histogram' from a to T
+-Delta
+compute Delta_a^b(p)
+  where max_points is the number of points used in numerical integration
+  and norm is either 'l2' or 'l1'
+-plot_Delta
+  plot Delta_a^b(p) from 0 to pmax (use every stepsize-th prime)
+-theta
+  compute theta from Delta
+-theta_error_bound
+  compute error bound from numerical integration
+-theta_range
+  compute list of (x, theta(x)) pairs where x is a prime <= p
+  use every stepsize-th prime for x
+  where max_points is the number of points used in numerical integration
+  if step_size is not given the function estimates a proper size depending on p
+-theta_error_bound_range
+  compute lists of (x, theta_max(x)) or (x, theta_min(x)) pairs where x is a prime <= p
+  use every stepsize-th prime for x
+  where max_points is the number of points used in numerical integration
+  and theta_max/theta_min are upper/lower error bounds for the result of the numerical integration
+  if step_size is not given the function estimates a proper size depending on p
+-plot_theta
+plot theta(x) for x prime from 0 to p
+  if show_error_bound is True the upper and lower error_bound is shown
+"""
 
 import matplotlib.pyplot as plt
 import numpy as np
